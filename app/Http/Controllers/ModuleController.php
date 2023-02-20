@@ -25,6 +25,8 @@ class ModuleController extends Controller
         $request->validate([
             'module_code' => 'required',
             'name'        => 'required',
+            'is_active'   => 'nullable|boolean',
+            'is_in_menu'  => 'nullable|boolean'
         ]);
         $module = Module::create($request->only('module_code', 'name'));
         $module->save();
@@ -34,6 +36,19 @@ class ModuleController extends Controller
             "data"     => $module
         ]);
     }
+    //module edit
+    public function edit($id)
+    {
+        $module = Module::find($id);
+        if (is_null($module)) {
+            return $this->endError('user not found');
+        }
+        return response()->json([
+            "success" => true,
+            "message" => "permission founded ",
+            "data"    => $module
+        ]);
+    }
     //update module
     public function update(Request $request, $id)
     {
@@ -41,6 +56,8 @@ class ModuleController extends Controller
         $request->validate([
             'module_code' => 'required',
             'name'        => 'required',
+            'is_active'   => 'required|boolean',
+            'is_in_menu'  => 'required|boolean'
         ]);
         $module = Module::findOrFail($id)->update($request->only('module_code', 'name'));
         return response()->json([
@@ -51,9 +68,30 @@ class ModuleController extends Controller
     }
     //delete module
 
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
-        $module = Module::findOrFail($id)->delete();
+        // $module = Module::findOrFail($id);
+        // if ($module->permissions()->count() > 0) {
+        //     ($module->modulepermissions()->delete());
+        // }
+        $request->validate([
+            'softDelete' => 'required|boolean'
+        ]);
+        $module = Module::findOrFail($id);
+        if ($request->softDelete) {
+            // dd('softDelete');
+            if ($module->permissions()->count() > 0) {
+                ($module->permissions()->delete());
+            }
+            $module->delete();
+        } else {
+            // dd('hardDelete');
+            if ($module->permissions()->count() > 0) {
+                ($module->permissions()->forceDelete());
+            }
+            $module->forceDelete();
+        }
+
         return response()->json([
             "success" => true,
             "message" => "module deleted",

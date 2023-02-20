@@ -4,11 +4,20 @@ namespace App\Models;
 
 use App\Traits\Uuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ModulePermission extends Model
 {
+    use SoftDeletes;
     use Uuids;
     use HasFactory;
-    protected $fillable = ['permission_id', 'module_id', 'add_access', 'edit_access', 'delete_access', 'view_access'];
+    protected $fillable = [
+        'permission_id',
+        'module_id',
+        'add_access',
+        'edit_access',
+        'delete_access',
+        'view_access'
+    ];
 }

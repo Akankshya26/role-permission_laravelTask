@@ -6,11 +6,13 @@ namespace App\Models;
 use App\Traits\Uuids;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
+    use SoftDeletes;
     use Uuids;
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -28,6 +30,7 @@ class User extends Authenticatable
         'is_first_login',
         'code'
     ];
+    protected $dates = ['deleted_at'];
 
     /**
      * The attributes that should be hidden for serialization.

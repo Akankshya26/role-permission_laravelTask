@@ -13,8 +13,8 @@ class RoleController extends Controller
         $role =  Role::all();
         return response()->json([
             "success" => true,
-            "message" => "permission list",
-            "data"    => $role
+            "message" => "role list",
+            "data"    => $role->load('permissions')
 
         ]);
     }
@@ -36,6 +36,16 @@ class RoleController extends Controller
             "data"    => $role
         ]);
     }
+    //Role edit
+    public function edit($id)
+    {
+        $role = Role::with('permissions')->findOrFail($id);
+        return response()->json([
+            "success" => true,
+            "message" => "Role founded ",
+            "data"    => $role
+        ]);
+    }
     public function update(Request $request, $id)
     {
         //role validation
@@ -44,7 +54,10 @@ class RoleController extends Controller
             'description' => 'required',
 
         ]);
-        $role = Role::findOrFail($id)->update($request->only('name', 'description', 'is_active'));
+        $role = Role::findOrFail($id);
+        $role->update($request->only('name', 'description', 'is_active'));
+        // $role->permissions()->detach();
+        $role->permissions()->sync($request->roles);
         return response()->json([
             "success" => true,
             "message" => "role updated",
@@ -53,13 +66,37 @@ class RoleController extends Controller
     }
     //delete module
 
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
-        $role = Role::findOrFail($id)->delete();
+        $request->validate([
+            'softDelete' => 'required|boolean'
+        ]);
+        $role = Role::findOrFail($id);
+        if ($request->softDelete) {
+            // dd('softDelete');
+            if ($role->permissions()->count() > 0) {
+                ($role->permissions()->delete());
+            }
+            $role->delete();
+        } else {
+            // dd('hardDelete');
+            if ($role->permissions()->count() > 0) {
+                ($role->permissions()->forceDelete());
+            }
+            $role->forceDelete();
+        }
         return response()->json([
             "success" => true,
             "message" => "role deleted",
-            "data"    => $role
+        ]);
+    }
+    //restore deleted data from trashed
+    public function restore($id)
+    {
+        Role::where('id', $id)->withTrashed()->restore();
+        return response()->json([
+            "success" => true,
+            "message" => "user restored",
         ]);
     }
 }
