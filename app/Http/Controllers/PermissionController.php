@@ -10,13 +10,36 @@ use App\Models\ModulePermission;
 class PermissionController extends Controller
 {
     //list of permissions
-    public function index()
+    public function index(Request $request)
     {
-        $permission =  Permission::all();
+        //validation for sorting ,seraching &pagination
+        $request->validate([
+            'perpage'     => 'required|numeric',
+            'currentpage' => 'required|numeric',
+            'sortField'   => 'nullable|string',
+            'sortOrder'   => 'nullable|in:asc,desc',
+            'name'        => 'nullable|string'
+
+        ]);
+        //sorting
+        $permission =  Permission::query();
+        if ($request->sortField && $request->sortOrder) {
+            $permission = $permission->orderBy($request->sortField, $request->sortOrder);
+        } else {
+            $permission = $permission->orderBy('id', 'DESC');
+        }
+        //pagination
+        $perpage = $request->perpage;
+        $currentpage = $request->currentpage;
+        $permission = $permission->skip($perpage * ($currentpage - 1))->take($perpage);
+        //searching
+        if (request()->has('search')) {
+            $permission->where('name', 'Like', '%' . request()->input('search') . '%');
+        }
         return response()->json([
             "success" => true,
             "message" => "permission list",
-            "data"    => $permission->load('modulepermissions')
+            "data"    => $permission->get()
 
         ]);
     }
@@ -73,25 +96,17 @@ class PermissionController extends Controller
         ]);
         $permission = Permission::findOrFail($id);
         $permission->update($request->only('name', 'description'));
-        // $permission->modulepermissions()->delete();
-        // $permission->modulepermissions()->createMany($request->modules);
-        // if (is_array($modulepermissions) || is_object($permission)) {
-        // dd($permission);
         foreach ($request['modulepermissions']  as $modules) {
             ModulePermission::updateOrCreate(
-
+                ['permission_id' => $permission->id, 'module_id' => $modules['module_id']],
                 [
-                    'permission_id' => $modules->id, 'module_id' => $modules['module_id'],
-                    [
-                        'add_access'    => $modules['add_access'],
-                        'edit_access '  => $modules['edit_access'],
-                        'delete_access' => $modules['delete_access'],
-                        'view_access'   => $modules['view_access'],
-                    ]
+                    'add_access'    => $modules['add_access'],
+                    'edit_access '  => $modules['edit_access'],
+                    'delete_access' => $modules['delete_access'],
+                    'view_access'   => $modules['view_access']
                 ]
             );
         }
-
         return response()->json([
             "success" => true,
             "message" => "permission updated",
@@ -102,12 +117,6 @@ class PermissionController extends Controller
     //delete module
     public function destroy($id, Request $request)
     {
-        // $permission = Permission::findOrFail($id)->delete();
-        // $permission = Permission::find($id);
-        // if ($permission->has('roles')) {
-        //     $permission->delete();
-        // }
-
         $request->validate([
             'softDelete' => 'required|boolean'
         ]);
@@ -125,13 +134,17 @@ class PermissionController extends Controller
             }
             $permission->forceDelete();
         }
-        // if ($permission->modulepermissions()->count() > 0) {
-        //     ($permission->modulepermissions()->delete());
-        // }
-
         return response()->json([
             "success" => true,
             "message" => "permission deleted",
+        ]);
+    }
+    public function restore($id)
+    {
+        Permission::where('id', $id)->withTrashed()->restore();
+        return response()->json([
+            "success" => true,
+            "message" => "user restored",
         ]);
     }
 }

@@ -19,6 +19,7 @@ class Module extends Model
         'is_in_menu',
         'created_by',
     ];
+    protected $dates = ['deleted_at'];
     //relationship between module and permission
     public function permissions()
     {

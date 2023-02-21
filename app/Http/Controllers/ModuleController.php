@@ -8,13 +8,36 @@ use Illuminate\Http\Request;
 class ModuleController extends Controller
 {
     //list of modules
-    public function index()
+    public function index(Request $request)
     {
-        $module = Module::all();
+        //validation for sorting ,seraching &pagination
+        $request->validate([
+            'perpage'     => 'required|numeric',
+            'currentpage' => 'required|numeric',
+            'sortField'   => 'nullable|string',
+            'sortOrder'   => 'nullable|in:asc,desc',
+            'name'        => 'nullable|string'
+
+        ]);
+        //sorting
+        $module = Module::query();
+        if ($request->sortField && $request->sortOrder) {
+            $module = $module->orderBy($request->sortField, $request->sortOrder);
+        } else {
+            $module = $module->orderBy('id', 'DESC');
+        }
+        //pagination
+        $perpage = $request->perpage;
+        $currentpage = $request->currentpage;
+        $module = $module->skip($perpage * ($currentpage - 1))->take($perpage);
+        //searching
+        if (request()->has('search')) {
+            $module->where('name', 'Like', '%' . request()->input('search') . '%');
+        }
         return response()->json([
             "success" => true,
             "message" => "module list",
-            "data"    => $module
+            "data"    => $module->get()
 
         ]);
     }
@@ -70,32 +93,26 @@ class ModuleController extends Controller
 
     public function destroy($id, Request $request)
     {
-        // $module = Module::findOrFail($id);
-        // if ($module->permissions()->count() > 0) {
-        //     ($module->modulepermissions()->delete());
-        // }
         $request->validate([
             'softDelete' => 'required|boolean'
         ]);
-        $module = Module::findOrFail($id);
         if ($request->softDelete) {
-            // dd('softDelete');
-            if ($module->permissions()->count() > 0) {
-                ($module->permissions()->delete());
-            }
-            $module->delete();
+            Module::findOrFail($id)->delete();
         } else {
-            // dd('hardDelete');
-            if ($module->permissions()->count() > 0) {
-                ($module->permissions()->forceDelete());
-            }
-            $module->forceDelete();
+            Module::findOrFail($id)->forceDelete();
         }
-
         return response()->json([
             "success" => true,
             "message" => "module deleted",
-            "data"    => $module
+
+        ]);
+    }
+    public function restore($id)
+    {
+        Module::where('id', $id)->withTrashed()->restore();
+        return response()->json([
+            "success" => true,
+            "message" => "user restored",
         ]);
     }
 }

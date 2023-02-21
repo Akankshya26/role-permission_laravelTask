@@ -8,13 +8,37 @@ use Illuminate\Http\Request;
 class RoleController extends Controller
 {
     //view list of roles
-    public function index()
+    public function index(Request $request)
     {
-        $role =  Role::all();
+        //validation for sorting ,seraching & pagination
+        $request->validate([
+            'perpage'     => 'required|numeric',
+            'currentpage' => 'required|numeric',
+            'sortField'   => 'nullable|string',
+            'sortOrder'   => 'nullable|in:asc,desc',
+            'name'        => 'nullable|string'
+
+        ]);
+
+        $role =  Role::query();
+        //sorting
+        if ($request->sortField && $request->sortOrder) {
+            $role = $role->orderBy($request->sortField, $request->sortOrder);
+        } else {
+            $role = $role->orderBy('id', 'DESC');
+        }
+        //pagination
+        $perpage = $request->perpage;
+        $currentpage = $request->currentpage;
+        $role = $role->skip($perpage * ($currentpage - 1))->take($perpage);
+        //searching
+        if (request()->has('search')) {
+            $role->where('name', 'Like', '%' . request()->input('search') . '%');
+        }
         return response()->json([
             "success" => true,
             "message" => "role list",
-            "data"    => $role->load('permissions')
+            "data"    => $role->get()
 
         ]);
     }
@@ -72,8 +96,9 @@ class RoleController extends Controller
             'softDelete' => 'required|boolean'
         ]);
         $role = Role::findOrFail($id);
+        // dd($request->all());
+
         if ($request->softDelete) {
-            // dd('softDelete');
             if ($role->permissions()->count() > 0) {
                 ($role->permissions()->delete());
             }

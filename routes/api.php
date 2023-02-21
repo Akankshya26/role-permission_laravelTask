@@ -26,38 +26,38 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Route::prefix('V1')->group(function () {
 Route::controller(ModuleController::class)->prefix('module')->group(function () {
     //Module routes
-    Route::get('/list',  'index');
+    Route::post('/list',  'index');
     Route::post('create', 'create');
     Route::get('edit/{id}', 'edit');
     Route::post('update/{id}', 'update');
-    Route::get('delete/{id}',  'destroy');
+    Route::post('delete/{id}',  'destroy');
+    Route::get('restore/{id}', 'restore');
 });
 //permissions routes
 Route::controller(PermissionController::class)->prefix('permission')->group(function () {
-    Route::get('/list', 'index');
+    Route::post('/list', 'index');
     Route::post('create', 'create');
     Route::get('edit/{id}', 'edit');
     Route::post('update/{id}', 'update');
     Route::post('delete/{id}',  'destroy');
+    Route::get('restore/{id}', 'restore');
 });
 //role routes
 Route::controller(RoleController::class)->prefix('role')->group(function () {
-    Route::get('/list', 'index');
+    Route::post('/list', 'index');
     Route::get('edit/{id}', 'edit');
     Route::post('create', 'create');
     Route::post('update/{id}', 'update');
     Route::post('delete/{id}',  'destroy');
-    Route::post('restore/{id}', 'restore');
-    Route::delete('force-delete/{id}', 'forceDelete');
+    Route::get('restore/{id}', 'restore');
 });
 //user routes
 Route::controller(UserController::class)->prefix('user')->group(function () {
-    Route::get('/list', 'index');
+    Route::post('/list', 'index');
     Route::get('edit/{id}', 'edit');
     Route::post('create', 'create');
     Route::post('update/{id}', 'update');
-    Route::get('delete/{id}',  'destroy');
-    Route::post('restore/{id}', 'restore');
-    Route::delete('force-delete/{id}', 'forceDelete');
+    Route::post('delete/{id}',  'destroy');
+    Route::get('restore/{id}', 'restore');
 });
 // });

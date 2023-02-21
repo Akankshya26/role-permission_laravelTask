@@ -8,13 +8,36 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
     //list of user
-    public function index()
+    public function index(Request $request)
     {
-        $user = User::all();
+        //validation for sorting ,seraching & pagination
+        $request->validate([
+            'perpage'     => 'required|numeric',
+            'currentpage' => 'required|numeric',
+            'sortField'   => 'nullable|string',
+            'sortOrder'   => 'nullable|in:asc,desc',
+            'name'        => 'nullable|string'
+
+        ]);
+        $user = User::query();
+        //sorting
+        if ($request->sortField && $request->sortOrder) {
+            $user = $user->orderBy($request->sortField, $request->sortOrder);
+        } else {
+            $user = $user->orderBy('id', 'DESC');
+        }
+        //pagination
+        $perpage = $request->perpage;
+        $currentpage = $request->currentpage;
+        $user = $user->skip($perpage * ($currentpage - 1))->take($perpage);
+        //searching
+        if (request()->has('search')) {
+            $user->where('first_name', 'Like', '%' . request()->input('search') . '%');
+        }
         return response()->json([
             "success" => true,
             "message" => "user list",
-            "data"    => $user->load('roleusers')
+            "data"    => $user->get()
         ]);
     }
     //create user
@@ -72,10 +95,6 @@ class UserController extends Controller
     //delete users(soft delete)
     public function destroy($id, Request $request)
     {
-        $user = User::findOrFail($id);
-        // if ($user->roleusers()->count() > 0) {
-        //     ($user->roleusers()->detach());
-        // }
         $request->validate([
             'softDelete' => 'required|boolean'
         ]);
@@ -106,19 +125,6 @@ class UserController extends Controller
         return response()->json([
             "success" => true,
             "message" => "user restored",
-        ]);
-    }
-    //force delete(data permanently delete)
-    public function forceDelete($id)
-    {
-        $user = User::where('id', $id)->withTrashed()->forceDelete();
-        if ($user->roleusers()->count() > 0) {
-            ($user->roleusers()->detach());
-        }
-        $user->forceDelete();
-        return response()->json([
-            "success" => true,
-            "message" => "user deleted permanently",
         ]);
     }
 }

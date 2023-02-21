@@ -4,12 +4,10 @@ namespace App\Models;
 
 use App\Traits\Uuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ModulePermission extends Model
 {
-    use SoftDeletes;
     use Uuids;
     use HasFactory;
     protected $fillable = [
@@ -20,4 +18,5 @@ class ModulePermission extends Model
         'delete_access',
         'view_access'
     ];
+    protected $dates = ['deleted_at'];
 }

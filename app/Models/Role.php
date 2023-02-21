@@ -13,6 +13,7 @@ class Role extends Model
     use Uuids;
     use HasFactory;
     protected $fillable = ['name', 'description'];
+    protected $dates = ['deleted_at'];
     //relationship between role and permission
     public function permissions()
     {

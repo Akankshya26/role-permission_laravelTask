@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Traits\Uuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class RoleUser extends Model
 {
     use Uuids;
     use HasFactory;
     protected $fillable = ['role_id', 'user_id'];
+    protected $dates = ['deleted_at'];
 }

@@ -13,7 +13,7 @@ class Permission extends Model
     use Uuids;
     use HasFactory;
     protected $fillable = ['name', 'description', 'is_active', 'created_by'];
-
+    protected $dates = ['deleted_at'];
     //relationship between ModulePermission and permission
     public function modulepermissions()
     {
