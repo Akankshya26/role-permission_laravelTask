@@ -11,5 +11,5 @@ class RoleUser extends Model
     use Uuids;
     use HasFactory;
     protected $fillable = ['role_id', 'user_id'];
-    protected $dates = ['deleted_at'];
+    protected $dates    = ['deleted_at'];
 }

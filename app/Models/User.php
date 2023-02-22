@@ -55,4 +55,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Role::class, 'role_users');
     }
+
+    //function for  checking users  assigned roles
+    public function hasAccess($modulepermissions, $permissions)
+    {
+        // dd($this->roleusers()->first()->roleAccess($modulepermissions, $permissions));
+        return  $this->roleusers()->first()->roleAccess($modulepermissions, $permissions);
+    }
 }

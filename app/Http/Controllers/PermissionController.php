@@ -9,7 +9,7 @@ use App\Models\ModulePermission;
 
 class PermissionController extends Controller
 {
-    //list of permissions
+    //list of permissions function
     public function index(Request $request)
     {
         //validation for sorting ,seraching &pagination
@@ -21,21 +21,22 @@ class PermissionController extends Controller
             'name'        => 'nullable|string'
 
         ]);
-        //sorting
-        $permission =  Permission::query();
+        //sorting function
+        $permission     =  Permission::query();
         if ($request->sortField && $request->sortOrder) {
             $permission = $permission->orderBy($request->sortField, $request->sortOrder);
         } else {
             $permission = $permission->orderBy('id', 'DESC');
         }
-        //pagination
-        $perpage = $request->perpage;
-        $currentpage = $request->currentpage;
-        $permission = $permission->skip($perpage * ($currentpage - 1))->take($perpage);
-        //searching
+        //searching function
         if (request()->has('search')) {
             $permission->where('name', 'Like', '%' . request()->input('search') . '%');
         }
+        //pagination function
+        $perpage     = $request->perpage;
+        $currentpage = $request->currentpage;
+        $permission  = $permission->skip($perpage * ($currentpage - 1))->take($perpage);
+
         return response()->json([
             "success" => true,
             "message" => "permission list",
@@ -43,7 +44,7 @@ class PermissionController extends Controller
 
         ]);
     }
-    //create module
+    //create permission function
     public function create(Request $request)
     {
         //Permission Validation
@@ -68,7 +69,7 @@ class PermissionController extends Controller
             "data"    => $permission->load('modulepermissions')
         ]);
     }
-    //permission edit
+    //permission edit function
     public function edit($id)
     {
         $permission = Permission::with('modulepermissions')->findOrFail($id);
@@ -78,7 +79,7 @@ class PermissionController extends Controller
             "data"    => $permission
         ]);
     }
-    //update permission
+    //update permission function
     public function update(Request $request, $id)
     {
         // permission validation
@@ -114,7 +115,7 @@ class PermissionController extends Controller
         ]);
     }
     // }
-    //delete module
+    //delete module function
     public function destroy($id, Request $request)
     {
         $request->validate([
@@ -139,6 +140,7 @@ class PermissionController extends Controller
             "message" => "permission deleted",
         ]);
     }
+    //restore permission function
     public function restore($id)
     {
         Permission::where('id', $id)->withTrashed()->restore();

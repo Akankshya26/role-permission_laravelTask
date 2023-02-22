@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
-    //view list of roles
+    //view list of roles function
     public function index(Request $request)
     {
         //validation for sorting ,seraching & pagination
@@ -21,20 +21,21 @@ class RoleController extends Controller
         ]);
 
         $role =  Role::query();
-        //sorting
+        //sorting function
         if ($request->sortField && $request->sortOrder) {
             $role = $role->orderBy($request->sortField, $request->sortOrder);
         } else {
             $role = $role->orderBy('id', 'DESC');
         }
-        //pagination
-        $perpage = $request->perpage;
-        $currentpage = $request->currentpage;
-        $role = $role->skip($perpage * ($currentpage - 1))->take($perpage);
-        //searching
+        //searching function
         if (request()->has('search')) {
             $role->where('name', 'Like', '%' . request()->input('search') . '%');
         }
+        //pagination function
+        $perpage     = $request->perpage;
+        $currentpage = $request->currentpage;
+        $role        = $role->skip($perpage * ($currentpage - 1))->take($perpage);
+
         return response()->json([
             "success" => true,
             "message" => "role list",
@@ -42,7 +43,7 @@ class RoleController extends Controller
 
         ]);
     }
-    //create module
+    //create module function
     public function create(Request $request)
     {
         //role validation
@@ -60,7 +61,7 @@ class RoleController extends Controller
             "data"    => $role
         ]);
     }
-    //Role edit
+    //Role edit function
     public function edit($id)
     {
         $role = Role::with('permissions')->findOrFail($id);
@@ -88,7 +89,7 @@ class RoleController extends Controller
             "data"    => $role
         ]);
     }
-    //delete module
+    //delete module function
 
     public function destroy($id, Request $request)
     {

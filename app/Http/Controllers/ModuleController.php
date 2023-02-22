@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class ModuleController extends Controller
 {
-    //list of modules
+    //list of modules function
     public function index(Request $request)
     {
         //validation for sorting ,seraching &pagination
@@ -19,21 +19,21 @@ class ModuleController extends Controller
             'name'        => 'nullable|string'
 
         ]);
-        //sorting
+        //sorting function
         $module = Module::query();
         if ($request->sortField && $request->sortOrder) {
             $module = $module->orderBy($request->sortField, $request->sortOrder);
         } else {
             $module = $module->orderBy('id', 'DESC');
         }
-        //pagination
-        $perpage = $request->perpage;
-        $currentpage = $request->currentpage;
-        $module = $module->skip($perpage * ($currentpage - 1))->take($perpage);
-        //searching
+        //searching function
         if (request()->has('search')) {
             $module->where('name', 'Like', '%' . request()->input('search') . '%');
         }
+        //pagination function
+        $perpage     = $request->perpage;
+        $currentpage = $request->currentpage;
+        $module      = $module->skip($perpage * ($currentpage - 1))->take($perpage);
         return response()->json([
             "success" => true,
             "message" => "module list",
@@ -41,7 +41,7 @@ class ModuleController extends Controller
 
         ]);
     }
-    //create module
+    //create module function
     public function create(Request $request)
     {
         //module validation
@@ -59,7 +59,7 @@ class ModuleController extends Controller
             "data"     => $module
         ]);
     }
-    //module edit
+    //module edit function
     public function edit($id)
     {
         $module = Module::find($id);
@@ -72,7 +72,7 @@ class ModuleController extends Controller
             "data"    => $module
         ]);
     }
-    //update module
+    //update module function
     public function update(Request $request, $id)
     {
         //module validation
@@ -89,7 +89,7 @@ class ModuleController extends Controller
             "data"    => $module
         ]);
     }
-    //delete module
+    //delete module function
 
     public function destroy($id, Request $request)
     {
@@ -107,6 +107,7 @@ class ModuleController extends Controller
 
         ]);
     }
+    //restore module function
     public function restore($id)
     {
         Module::where('id', $id)->withTrashed()->restore();
